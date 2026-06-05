@@ -1,0 +1,64 @@
+# Optional: run all services locally. Each service can also be built/deployed alone.
+# Build only what changed:
+#   docker compose build user-service
+#   docker compose up -d user-service
+
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  user-service:
+    build: ./services/user-service
+    ports:
+      - "50051:50051"
+      - "3001:3001"
+    environment:
+      MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/user_service}
+      PORT: 50051
+      HTTP_PORT: 3001
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+    depends_on:
+      - mongodb
+
+  upload-service:
+    build: ./services/upload-service
+    ports:
+      - "50052:50052"
+      - "3002:3002"
+    environment:
+      MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/upload_service}
+      PORT: 50052
+      HTTP_PORT: 3002
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      UPLOAD_DIR: /app/uploads
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-500}
+    volumes:
+      - upload_data:/app/uploads
+    depends_on:
+      - mongodb
+
+  watch-service:
+    build: ./services/watch-service
+    ports:
+      - "50053:50053"
+      - "3003:3003"
+    environment:
+      MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/watch_service}
+      PORT: 50053
+      HTTP_PORT: 3003
+      UPLOAD_SERVICE_URL: http://upload-service:3002
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-in-production}
+    depends_on:
+      - mongodb
+      - upload-service
+
+volumes:
+  mongo_data:
+  upload_data:

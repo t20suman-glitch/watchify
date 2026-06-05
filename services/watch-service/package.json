@@ -1,0 +1,23 @@
+{
+  "name": "watch-service",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "docker:build": "docker build -t watch-service .",
+    "docker:run": "docker run --rm -p 50053:50053 -p 3003:3003 --env-file .env watch-service"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.12.0",
+    "@grpc/proto-loader": "^0.7.13",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

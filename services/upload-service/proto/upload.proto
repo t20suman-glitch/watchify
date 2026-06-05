@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package upload;
+
+service UploadService {
+  rpc UploadMedia (stream UploadMediaRequest) returns (UploadMediaResponse);
+  rpc GetMedia (GetMediaRequest) returns (MediaResponse);
+  rpc ListMedia (ListMediaRequest) returns (ListMediaResponse);
+}
+
+message UploadMediaRequest {
+  oneof chunk {
+    MediaMetadata metadata = 1;
+    bytes data = 2;
+  }
+}
+
+message MediaMetadata {
+  string title = 1;
+  string description = 2;
+  string uploaded_by = 3;
+  string filename = 4;
+  string content_type = 5;
+  string media_type = 6;
+}
+
+message UploadMediaResponse {
+  string media_id = 1;
+  string storage_key = 2;
+  string storage_provider = 3;
+}
+
+message GetMediaRequest {
+  string media_id = 1;
+}
+
+message ListMediaRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string media_type = 3;
+}
+
+message MediaResponse {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string uploaded_by = 4;
+  string media_type = 5;
+  string storage_key = 6;
+  string storage_provider = 7;
+  string content_type = 8;
+  int64 size_bytes = 9;
+  string original_filename = 10;
+  string created_at = 11;
+}
+
+message ListMediaResponse {
+  repeated MediaResponse media = 1;
+}

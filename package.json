@@ -1,0 +1,13 @@
+{
+  "name": "movie-microservice",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Optional local orchestration only — each service deploys independently",
+  "scripts": {
+    "compose:up": "docker compose up -d",
+    "compose:down": "docker compose down",
+    "compose:build:user": "docker compose build user-service",
+    "compose:build:upload": "docker compose build upload-service",
+    "compose:build:watch": "docker compose build watch-service"
+  }
+}

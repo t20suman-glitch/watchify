@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+coverage/
+
+# Per-service (also ignored inside each service folder)
+services/*/node_modules/
+services/*/uploads/*
+!services/*/uploads/.gitkeep

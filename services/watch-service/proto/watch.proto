@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package watch;
+
+service WatchService {
+  rpc StartWatch (StartWatchRequest) returns (WatchSessionResponse);
+  rpc UpdateProgress (UpdateProgressRequest) returns (WatchSessionResponse);
+  rpc GetWatchHistory (GetWatchHistoryRequest) returns (WatchHistoryResponse);
+}
+
+message StartWatchRequest {
+  string user_id = 1;
+  string media_id = 2;
+}
+
+message UpdateProgressRequest {
+  string session_id = 1;
+  string user_id = 2;
+  int32 position_seconds = 3;
+}
+
+message GetWatchHistoryRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message WatchSessionResponse {
+  string session_id = 1;
+  string user_id = 2;
+  string media_id = 3;
+  int32 position_seconds = 4;
+  string started_at = 5;
+}
+
+message WatchHistoryResponse {
+  repeated WatchSessionResponse sessions = 1;
+}
