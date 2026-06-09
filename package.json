@@ -6,6 +6,8 @@
   "scripts": {
     "compose:up": "docker compose up -d",
     "compose:down": "docker compose down",
+    "compose:up:prod": "docker compose -f docker-compose.prod.yml up -d --build",
+    "compose:down:prod": "docker compose -f docker-compose.prod.yml down",
     "compose:build:user": "docker compose build user-service",
     "compose:build:upload": "docker compose build upload-service",
     "compose:build:watch": "docker compose build watch-service"

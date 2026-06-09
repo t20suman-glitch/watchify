@@ -1,0 +1,71 @@
+# Production stack for EC2 / single-host deployment.
+# Only the frontend is exposed publicly (port 80).
+#
+# Usage:
+#   cp .env.production.example .env
+#   docker compose -f docker-compose.prod.yml up -d --build
+
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+
+  user-service:
+    build: ./services/user-service
+    restart: unless-stopped
+    environment:
+      MONGO_URI: ${USER_MONGO_URI:-mongodb://mongodb:27017/user_service}
+      PORT: 50051
+      HTTP_PORT: 3001
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+    depends_on:
+      - mongodb
+
+  upload-service:
+    build: ./services/upload-service
+    restart: unless-stopped
+    environment:
+      MONGO_URI: ${UPLOAD_MONGO_URI:-mongodb://mongodb:27017/upload_service}
+      PORT: 50052
+      HTTP_PORT: 3002
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      UPLOAD_DIR: /app/uploads
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-500}
+    volumes:
+      - upload_data:/app/uploads
+    depends_on:
+      - mongodb
+
+  watch-service:
+    build: ./services/watch-service
+    restart: unless-stopped
+    environment:
+      MONGO_URI: ${WATCH_MONGO_URI:-mongodb://mongodb:27017/watch_service}
+      PORT: 50053
+      HTTP_PORT: 3003
+      UPLOAD_SERVICE_URL: http://upload-service:3002
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    depends_on:
+      - mongodb
+      - upload-service
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:3000"
+    environment:
+      USER_SERVICE_URL: http://user-service:3001
+      UPLOAD_SERVICE_URL: http://upload-service:3002
+      WATCH_SERVICE_URL: http://watch-service:3003
+    depends_on:
+      - user-service
+      - upload-service
+      - watch-service
+
+volumes:
+  mongo_data:
+  upload_data:
