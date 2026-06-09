@@ -27,28 +27,30 @@ export default async function WatchPage({
     <div>
       <Link
         href="/"
-        className="mb-6 inline-block text-sm text-neutral-500 hover:underline"
+        className="mb-6 inline-block text-sm text-muted transition hover:text-accent"
       >
         ← Back
       </Link>
 
-      <h1 className="mb-4 text-xl font-medium">{media.title}</h1>
+      <h1 className="mb-4 text-2xl font-semibold tracking-tight">{media.title}</h1>
 
-      {isVideo ? (
-        <video
-          src={streamSrc}
-          controls
-          className="w-full rounded bg-black"
-          playsInline
-        />
-      ) : (
-        <audio src={streamSrc} controls className="w-full" />
-      )}
+      <div className="overflow-hidden rounded-xl border border-border bg-black shadow-2xl shadow-black/40">
+        {isVideo ? (
+          <video
+            src={streamSrc}
+            controls
+            className="w-full"
+            playsInline
+          />
+        ) : (
+          <div className="bg-surface-elevated p-6">
+            <audio src={streamSrc} controls className="w-full" />
+          </div>
+        )}
+      </div>
 
       {media.description ? (
-        <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-400">
-          {media.description}
-        </p>
+        <p className="mt-4 text-sm text-muted">{media.description}</p>
       ) : null}
     </div>
   );

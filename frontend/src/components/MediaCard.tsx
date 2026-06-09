@@ -25,37 +25,30 @@ export function MediaCard({
   const label = isVideo ? "Video" : "Audio";
 
   return (
-    <article className="rounded border border-neutral-200 p-4 dark:border-neutral-800">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-xs uppercase tracking-wide text-neutral-500">
+    <article className="card">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-accent">
           {label}
         </span>
-        <span className="text-xs text-neutral-400">
-          {formatDate(media.created_at)}
-        </span>
+        <span className="text-xs text-subtle">{formatDate(media.created_at)}</span>
       </div>
 
-      <h2 className="mb-1 font-medium">{media.title}</h2>
+      <h2 className="mb-1 text-base font-medium text-foreground">{media.title}</h2>
 
       {media.description ? (
-        <p className="mb-3 text-sm text-neutral-600 dark:text-neutral-400">
-          {media.description}
-        </p>
+        <p className="mb-3 text-sm text-muted">{media.description}</p>
       ) : null}
 
-      <p className="mb-4 text-xs text-neutral-400">
+      <p className="mb-4 text-xs text-subtle">
         {media.original_filename} · {formatSize(media.size_bytes)}
       </p>
 
       {loggedIn ? (
-        <Link
-          href={`/watch/${media.id}`}
-          className="text-sm font-medium hover:underline"
-        >
+        <Link href={`/watch/${media.id}`} className="link-accent text-sm font-medium">
           {isVideo ? "Watch" : "Listen"} →
         </Link>
       ) : (
-        <Link href="/login" className="text-sm text-neutral-500 hover:underline">
+        <Link href="/login" className="text-sm text-muted transition hover:text-foreground">
           Sign in to {isVideo ? "watch" : "listen"}
         </Link>
       )}

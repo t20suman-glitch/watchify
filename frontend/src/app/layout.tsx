@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { AuthNav } from "@/components/AuthNav";
+import { Logo } from "@/components/Logo";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Media",
-  description: "Browse uploaded videos and audio",
+  title: "Watchify",
+  description: "Watch and listen to uploaded videos and audio",
 };
 
 export default function RootLayout({
@@ -15,12 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen antialiased">
-        <header className="border-b border-neutral-200 dark:border-neutral-800">
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <header className="border-b border-border bg-surface/80 backdrop-blur-sm">
           <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-            <Link href="/" className="font-medium hover:underline">
-              Media
-            </Link>
+            <Logo />
             <AuthNav />
           </div>
         </header>

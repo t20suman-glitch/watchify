@@ -37,7 +37,7 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-sm space-y-4">
       <div>
-        <label htmlFor="email" className="mb-1 block text-sm">
+        <label htmlFor="email" className="mb-1.5 block text-sm text-muted">
           Email
         </label>
         <input
@@ -46,12 +46,12 @@ export function RegisterForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+          className="input-field"
         />
       </div>
 
       <div>
-        <label htmlFor="username" className="mb-1 block text-sm">
+        <label htmlFor="username" className="mb-1.5 block text-sm text-muted">
           Username
         </label>
         <input
@@ -60,12 +60,12 @@ export function RegisterForm() {
           required
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+          className="input-field"
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="mb-1 block text-sm">
+        <label htmlFor="password" className="mb-1.5 block text-sm text-muted">
           Password
         </label>
         <input
@@ -74,23 +74,19 @@ export function RegisterForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"
+          className="input-field"
         />
       </div>
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900"
-      >
+      <button type="submit" disabled={loading} className="btn-primary">
         {loading ? "Creating account…" : "Register"}
       </button>
 
-      <p className="text-center text-sm text-neutral-500">
+      <p className="text-center text-sm text-muted">
         Already have an account?{" "}
-        <Link href="/login" className="hover:underline">
+        <Link href="/login" className="link-accent">
           Sign in
         </Link>
       </p>

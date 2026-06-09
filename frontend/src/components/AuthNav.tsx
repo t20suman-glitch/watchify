@@ -9,17 +9,17 @@ export async function AuthNav() {
     <nav className="flex items-center gap-4 text-sm">
       {loggedIn ? (
         <>
-          <span className="text-neutral-500">Signed in</span>
+          <span className="text-muted">Signed in</span>
           <LogoutButton />
         </>
       ) : (
         <>
-          <Link href="/login" className="hover:underline">
+          <Link href="/login" className="text-muted transition hover:text-foreground">
             Sign in
           </Link>
           <Link
             href="/register"
-            className="rounded border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
+            className="rounded-lg border border-border bg-surface-elevated px-3 py-1.5 text-foreground transition hover:border-accent/40 hover:text-accent"
           >
             Register
           </Link>

@@ -1,5 +1,68 @@
 @import "tailwindcss";
 
+/* Active theme: Midnight Gold (premium cinematic) */
+:root {
+  --bg: #09090b;
+  --surface: #141416;
+  --surface-elevated: #1c1c1f;
+  --border: #2a2a2e;
+  --foreground: #f4f4f5;
+  --muted: #a1a1aa;
+  --subtle: #71717a;
+  --accent: #d4a853;
+  --accent-hover: #e4bc62;
+  --accent-soft: rgba(212, 168, 83, 0.14);
+  --danger: #f87171;
+}
+
+/*
+  Alternative palettes — swap :root values to try:
+
+  Noir Violet (modern streaming)
+  --bg: #0c0c10; --surface: #15151c; --surface-elevated: #1e1e28;
+  --border: #2d2d3a; --foreground: #f5f5f7; --muted: #9ca3af;
+  --accent: #a78bfa; --accent-hover: #c4b5fd; --accent-soft: rgba(167, 139, 250, 0.14);
+
+  Ocean Slate (clean tech)
+  --bg: #0b1118; --surface: #121a24; --surface-elevated: #182230;
+  --border: #243044; --foreground: #f0f6fc; --muted: #94a3b8;
+  --accent: #38bdf8; --accent-hover: #7dd3fc; --accent-soft: rgba(56, 189, 248, 0.14);
+*/
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+}
+
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--foreground);
+}
+
+@layer components {
+  .input-field {
+    @apply w-full rounded-lg border border-border bg-surface-elevated px-3 py-2.5 text-sm text-foreground outline-none transition placeholder:text-subtle focus:border-accent focus:ring-2 focus:ring-accent-soft;
+  }
+
+  .btn-primary {
+    @apply w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-background transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .link-accent {
+    @apply text-accent transition hover:text-accent-hover;
+  }
+
+  .card {
+    @apply rounded-xl border border-border bg-surface p-5 transition hover:border-accent/30 hover:bg-surface-elevated;
+  }
 }
