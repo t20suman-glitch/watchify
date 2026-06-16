@@ -10,6 +10,8 @@ const { startGrpcServer } = require('./grpc/server');
 const { startHttpServer } = require('./http/server');
 
 async function main() {
+  logger.info('Starting service');
+
   if (!process.env.JWT_SECRET) {
     logger.warn(
       'JWT_SECRET is not set — using default. Tokens from user-service will fail unless secrets match.'

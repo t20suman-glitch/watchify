@@ -2,8 +2,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json ./
-RUN npm install --omit=dev
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
 COPY proto ./proto
 COPY src ./src
@@ -13,4 +13,4 @@ EXPOSE 50052 3002
 
 VOLUME ["/app/uploads"]
 
-CMD ["npm", "start"]
+CMD ["node", "src/index.js"]

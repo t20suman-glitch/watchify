@@ -287,6 +287,36 @@ All backend services use [Winston](https://github.com/winstonjs/winston):
 
 ### Reading logs in Docker
 
+**Use `docker compose logs`, not the bare service name with `docker logs`.**
+
+Compose service names (`user-service`) are not the same as container names (`watchify-user-service-1`). The compose command resolves the right container for you.
+
+```bash
+# Recommended — works with service names
+docker compose -f docker-compose.prod.yml logs -f user-service
+
+# See all running containers and their real names
+docker compose -f docker-compose.prod.yml ps
+
+# If you use docker logs, you need the NAME column from docker ps:
+docker logs -f watchify-user-service-1
+```
+
+If logs are empty, check the container is actually running:
+
+```bash
+docker compose -f docker-compose.prod.yml ps -a
+docker compose -f docker-compose.prod.yml logs --tail=50 user-service
+```
+
+After pulling logging fixes, rebuild images:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+You should see JSON lines like `{"level":"info","message":"Starting service",...}` on startup.
+
 Local dev stack:
 
 ```bash

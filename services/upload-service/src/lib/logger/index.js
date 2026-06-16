@@ -30,8 +30,8 @@ const logger = winston.createLogger({
   defaultMeta: { service: serviceName },
   format: isProduction ? productionFormat : developmentFormat,
   transports: [
-    new winston.transports.Console({
-      stderrLevels: ['error'],
+    new winston.transports.Stream({
+      stream: process.stdout,
     }),
   ],
   exitOnError: false,

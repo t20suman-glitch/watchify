@@ -12,6 +12,12 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping").ok']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   user-service:
     build: ./services/user-service
@@ -25,7 +31,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-only-change-in-production}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
   upload-service:
     build: ./services/upload-service
@@ -42,7 +49,8 @@ services:
     volumes:
       - upload_data:/app/uploads
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
 
   watch-service:
     build: ./services/watch-service

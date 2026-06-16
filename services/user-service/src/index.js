@@ -10,6 +10,7 @@ const { startGrpcServer } = require('./grpc/server');
 const { startHttpServer } = require('./http/server');
 
 async function main() {
+  logger.info('Starting service');
   await connectDatabase();
   startGrpcServer();
   startHttpServer();
