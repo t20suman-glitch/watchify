@@ -1,6 +1,7 @@
 const grpc = require('@grpc/grpc-js');
 const loadProto = require('../lib/grpc/loadProto');
 const config = require('../config');
+const logger = require('../lib/logger');
 const userHandlers = require('./handlers/user.handlers');
 
 function startGrpcServer() {
@@ -11,7 +12,7 @@ function startGrpcServer() {
   server.bindAsync(address, grpc.ServerCredentials.createInsecure(), (err, port) => {
     if (err) throw err;
     server.start();
-    console.log(`user-service gRPC listening on ${port}`);
+    logger.info('gRPC server listening', { port });
   });
 }
 

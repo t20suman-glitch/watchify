@@ -1,4 +1,5 @@
 const AppError = require('../../errors/appError');
+const logger = require('../../lib/logger');
 
 function errorHandler(err, _req, res, _next) {
   if (err instanceof AppError) {
@@ -6,7 +7,7 @@ function errorHandler(err, _req, res, _next) {
     return res.status(status).json(body);
   }
 
-  console.error(err);
+  logger.logError('Unhandled HTTP error', err);
   res.status(500).json({ error: 'Internal server error' });
 }
 

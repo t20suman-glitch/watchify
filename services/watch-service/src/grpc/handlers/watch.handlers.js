@@ -1,5 +1,6 @@
 const grpc = require('@grpc/grpc-js');
 const AppError = require('../../errors/appError');
+const logger = require('../../lib/logger');
 const watchService = require('../../services/watch.service');
 
 function handleRpc(promise, callback) {
@@ -10,7 +11,7 @@ function handleRpc(promise, callback) {
         callback(err.toGrpc());
         return;
       }
-      console.error(err);
+      logger.logError('Unhandled gRPC error', err);
       callback({ code: grpc.status.INTERNAL, message: 'Internal server error' });
     });
 }

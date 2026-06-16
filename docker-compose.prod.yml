@@ -1,5 +1,5 @@
 # Production stack for EC2 / single-host deployment.
-# Only the frontend is exposed publicly (port 80).
+# Public ports: frontend (80), upload-service (3002 for Postman uploads).
 #
 # Usage:
 #   cp .env.production.example .env
@@ -16,6 +16,8 @@ services:
     build: ./services/user-service
     restart: unless-stopped
     environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       MONGO_URI: ${USER_MONGO_URI:-mongodb://mongodb:27017/user_service}
       PORT: 50051
       HTTP_PORT: 3001
@@ -27,7 +29,11 @@ services:
   upload-service:
     build: ./services/upload-service
     restart: unless-stopped
+    ports:
+      - "${UPLOAD_PORT:-3002}:3002"
     environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       MONGO_URI: ${UPLOAD_MONGO_URI:-mongodb://mongodb:27017/upload_service}
       PORT: 50052
       HTTP_PORT: 3002
@@ -43,6 +49,8 @@ services:
     build: ./services/watch-service
     restart: unless-stopped
     environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       MONGO_URI: ${WATCH_MONGO_URI:-mongodb://mongodb:27017/watch_service}
       PORT: 50053
       HTTP_PORT: 3003

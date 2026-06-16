@@ -1,0 +1,28 @@
+# Copy to /etc/watchify/agent.hcl and edit VAULT_ADDR + AppRole credentials.
+
+vault {
+  address = "https://your-vault-server:8200"
+}
+
+auto_auth {
+  method "approle" {
+    config = {
+      role_id_file_path   = "/etc/watchify/role-id"
+      secret_id_file_path = "/etc/watchify/secret-id"
+    }
+  }
+
+  sink "file" {
+    config = {
+      path = "/etc/watchify/vault-token"
+      mode = 0600
+    }
+  }
+}
+
+template {
+  source      = "/etc/watchify/env.tpl"
+  destination = "/opt/watchify/.env.runtime"
+  perms       = 0600
+  command     = "docker compose -f /opt/watchify/docker-compose.prod.yml --env-file /opt/watchify/.env.runtime up -d"
+}
