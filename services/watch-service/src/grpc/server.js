@@ -11,7 +11,6 @@ function startGrpcServer() {
   const address = `0.0.0.0:${config.port}`;
   server.bindAsync(address, grpc.ServerCredentials.createInsecure(), (err, port) => {
     if (err) throw err;
-    server.start();
     logger.info('gRPC server listening', { port });
   });
 }
