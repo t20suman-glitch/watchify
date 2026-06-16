@@ -1,6 +1,7 @@
 import { isAuthenticated } from "@/lib/auth";
 import { listMedia } from "@/lib/api";
-import { MediaCard } from "@/components/MediaCard";
+import { HeroBanner } from "@/components/HeroBanner";
+import { MediaRow } from "@/components/MediaRow";
 
 export default async function HomePage() {
   const [media, loggedIn] = await Promise.all([
@@ -8,25 +9,32 @@ export default async function HomePage() {
     isAuthenticated(),
   ]);
 
+  const videos = media.filter((item) => item.media_type === "video");
+  const audio = media.filter((item) => item.media_type === "music");
+  const featured = videos[0] ?? media[0];
+
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-semibold tracking-tight">Browse</h1>
-      <p className="mb-8 text-sm text-muted">
-        {loggedIn
-          ? "Select a video or audio to play."
-          : "Sign in to watch or listen."}
-      </p>
+      {featured ? (
+        <HeroBanner media={featured} loggedIn={loggedIn} />
+      ) : (
+        <div className="mb-10">
+          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Browse</h1>
+          <p className="mt-2 text-sm text-muted">
+            {loggedIn
+              ? "Pick something to watch or listen."
+              : "Sign in to start watching."}
+          </p>
+        </div>
+      )}
 
       {media.length === 0 ? (
         <p className="text-sm text-muted">No uploads yet.</p>
       ) : (
-        <ul className="space-y-4">
-          {media.map((item) => (
-            <li key={item.id}>
-              <MediaCard media={item} loggedIn={loggedIn} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <MediaRow title="Videos" media={videos} loggedIn={loggedIn} />
+          <MediaRow title="Music & Audio" media={audio} loggedIn={loggedIn} />
+        </>
       )}
     </div>
   );

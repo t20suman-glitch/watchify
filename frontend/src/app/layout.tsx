@@ -16,13 +16,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <header className="border-b border-border bg-surface/80 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
+        <header className="sticky top-0 z-50 border-b border-border bg-surface/90 backdrop-blur-md">
+          <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-4 md:px-8">
             <Logo />
             <AuthNav />
           </div>
         </header>
-        <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
+        <main className="mx-auto max-w-[1400px] px-4 py-6 md:px-8 md:py-8">{children}</main>
       </body>
     </html>
   );

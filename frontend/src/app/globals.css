@@ -65,4 +65,27 @@ body {
   .card {
     @apply rounded-xl border border-border bg-surface p-5 transition hover:border-accent/30 hover:bg-surface-elevated;
   }
+
+  .media-row {
+    @apply flex gap-3 overflow-x-auto pb-2 scroll-smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .media-row::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .media-row::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 9999px;
+  }
+
+  .media-card {
+    @apply w-[160px] transition duration-300 md:w-[220px];
+  }
+
+  .media-card:hover {
+    @apply z-10 scale-105;
+  }
 }
