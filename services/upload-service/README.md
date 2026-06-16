@@ -40,6 +40,17 @@ Base URL: `http://localhost:3002`
 | `local` (default) | Files saved under `UPLOAD_DIR` |
 | `s3` | Stub in `src/storage/s3StorageProvider.js` — add `@aws-sdk/client-s3` when ready |
 
+## Environment
+
+| Variable | Default |
+|----------|---------|
+| `MONGO_URI` | required |
+| `PORT` | `50052` (gRPC) |
+| `HTTP_PORT` | `3002` (REST) |
+| `STORAGE_PROVIDER` | `local` |
+| `NODE_ENV` | unset — set `production` for JSON logs |
+| `LOG_LEVEL` | `info` (prod) / `debug` (dev) |
+
 ## Run
 
 ```bash

@@ -49,6 +49,8 @@ Base URL: `http://localhost:3003`
 | `HTTP_PORT` | `3003` |
 | `UPLOAD_SERVICE_URL` | `http://localhost:3002` |
 | `JWT_SECRET` | must match **user-service** |
+| `NODE_ENV` | unset — set `production` for JSON logs |
+| `LOG_LEVEL` | `info` (prod) / `debug` (dev) |
 
 ## Run
 

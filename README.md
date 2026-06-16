@@ -17,7 +17,7 @@ microservice/
 Each service folder is a complete app:
 
 - `proto/` — gRPC contract for that service only
-- `src/` — handlers, business logic, MongoDB models
+- `src/` — handlers, business logic, MongoDB models, Winston logger (`src/lib/logger/`)
 - `package.json`, `Dockerfile`, `.env.example`
 
 No shared npm package. No root-level code required to run or ship a service.
@@ -63,3 +63,65 @@ docker compose up -d                 # run all
 | watch-service | `watch-service.git` | `ci/watch.yml` | `watch-service:1.0.3` |
 
 You can copy any `services/<name>/` folder to its own repository today — it has no dependency on sibling folders.
+
+## Logging
+
+All three services use [Winston](https://github.com/winstonjs/winston) for structured logging:
+
+- **Development** — colored, human-readable lines with timestamps and service name
+- **Production** (`NODE_ENV=production`) — one JSON object per line (Docker, CloudWatch, Datadog, etc.)
+- **HTTP requests** — method, path, status, duration (health checks at `debug` level)
+- **Errors** — stack traces on unhandled HTTP/gRPC errors and process crashes
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NODE_ENV` | unset | Set to `production` for JSON logs |
+| `LOG_LEVEL` | `info` (prod) / `debug` (dev) | `error`, `warn`, `info`, `debug` |
+
+Production compose (`docker-compose.prod.yml`) sets `NODE_ENV=production` and `LOG_LEVEL` for every service.
+
+### Reading logs in Docker
+
+Local dev stack:
+
+```bash
+# All services, follow new lines
+docker compose logs -f
+
+# One service only
+docker compose logs -f user-service
+
+# Last 100 lines, then follow
+docker compose logs -f --tail=100 upload-service
+```
+
+Production stack:
+
+```bash
+docker compose -f docker-compose.prod.yml logs -f watch-service
+```
+
+Production logs are JSON — pipe through `jq` to pretty-print or filter:
+
+```bash
+# Pretty-print
+docker compose -f docker-compose.prod.yml logs --no-log-prefix user-service | jq .
+
+# Errors only
+docker compose -f docker-compose.prod.yml logs --no-log-prefix user-service | jq 'select(.level == "error")'
+
+# Slow HTTP requests (> 500ms)
+docker compose -f docker-compose.prod.yml logs --no-log-prefix upload-service \
+  | jq 'select(.message == "HTTP request" and .durationMs > 500)'
+```
+
+Raise verbosity without rebuilding — set `LOG_LEVEL=debug` in `.env`, then `docker compose -f docker-compose.prod.yml up -d`.
+
+## Production deployment
+
+```bash
+cp .env.production.example .env   # set JWT_SECRET, optional LOG_LEVEL
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+See `deploy/VAULT.md` for optional HashiCorp Vault secret loading.

@@ -37,3 +37,5 @@ npm run dev
 | `PORT` | `50051` (gRPC) |
 | `HTTP_PORT` | `3001` (REST) |
 | `JWT_SECRET` | required in production |
+| `NODE_ENV` | unset — set `production` for JSON logs |
+| `LOG_LEVEL` | `info` (prod) / `debug` (dev) |
