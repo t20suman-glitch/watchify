@@ -13,3 +13,5 @@ coverage/
 services/*/node_modules/
 services/*/uploads/*
 !services/*/uploads/.gitkeep
+
+deploy/k8s/secrets.yaml

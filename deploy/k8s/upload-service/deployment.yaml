@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: upload-data
+  namespace: watchify
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upload-service
+  namespace: watchify
+  labels:
+    app: upload-service
+spec:
+  # replicas: 1 required for local STORAGE_PROVIDER + ReadWriteOnce PVC
+  replicas: 1
+  selector:
+    matchLabels:
+      app: upload-service
+  template:
+    metadata:
+      labels:
+        app: upload-service
+    spec:
+      containers:
+        - name: upload-service
+          image: watchify/upload-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3002
+            - name: grpc
+              containerPort: 50052
+          envFrom:
+            - configMapRef:
+                name: watchify-config
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: watchify-config
+                  key: UPLOAD_MONGO_URI
+            - name: HTTP_PORT
+              value: "3002"
+            - name: PORT
+              value: "50052"
+          volumeMounts:
+            - name: uploads
+              mountPath: /app/uploads
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: upload-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: upload-service
+  namespace: watchify
+spec:
+  type: ClusterIP
+  selector:
+    app: upload-service
+  ports:
+    - name: http
+      port: 3002
+      targetPort: 3002
+    - name: grpc
+      port: 50052
+      targetPort: 50052

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: watchify-config
+  namespace: watchify
+data:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  JWT_EXPIRES_IN: "7d"
+  BCRYPT_SALT_ROUNDS: "10"
+
+  # In-cluster MongoDB (headless Service + StatefulSet)
+  USER_MONGO_URI: "mongodb://mongodb-0.mongodb:27017/user_service"
+  UPLOAD_MONGO_URI: "mongodb://mongodb-0.mongodb:27017/upload_service"
+  WATCH_MONGO_URI: "mongodb://mongodb-0.mongodb:27017/watch_service"
+
+  # Upload — local disk (matches docker-compose.prod.yml default; S3 is stub in code)
+  STORAGE_PROVIDER: "local"
+  UPLOAD_DIR: "/app/uploads"
+  MAX_FILE_SIZE_MB: "500"
+
+  # Internal ClusterIP DNS (same as compose service names)
+  USER_SERVICE_URL: "http://user-service:3001"
+  UPLOAD_SERVICE_URL: "http://upload-service:3002"
+  WATCH_SERVICE_URL: "http://watch-service:3003"
