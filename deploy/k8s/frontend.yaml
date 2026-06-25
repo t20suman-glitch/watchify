@@ -1,81 +1,78 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: watch-service
+  name: frontend
   namespace: watchify
   labels:
-    app: watch-service
+    app: frontend
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: watch-service
+      app: frontend
   template:
     metadata:
       labels:
-        app: watch-service
+        app: frontend
     spec:
       containers:
-        - name: watch-service
-          image: watchify/watch-service:latest
+        - name: frontend
+          image: t20suman/frontend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
-              containerPort: 3003
-            - name: grpc
-              containerPort: 50053
-          envFrom:
-            - configMapRef:
-                name: watchify-config
-            - secretRef:
-                name: watchify-secrets
+              containerPort: 3000
           env:
-            - name: MONGO_URI
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3000"
+            - name: HOSTNAME
+              value: "0.0.0.0"
+            - name: USER_SERVICE_URL
               valueFrom:
                 configMapKeyRef:
                   name: watchify-config
-                  key: WATCH_MONGO_URI
-            - name: HTTP_PORT
-              value: "3003"
-            - name: PORT
-              value: "50053"
+                  key: USER_SERVICE_URL
             - name: UPLOAD_SERVICE_URL
               valueFrom:
                 configMapKeyRef:
                   name: watchify-config
                   key: UPLOAD_SERVICE_URL
+            - name: WATCH_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: watchify-config
+                  key: WATCH_SERVICE_URL
           readinessProbe:
             httpGet:
-              path: /health
+              path: /
               port: http
-            initialDelaySeconds: 10
+            initialDelaySeconds: 15
             periodSeconds: 5
           livenessProbe:
             httpGet:
-              path: /health
+              path: /
               port: http
-            initialDelaySeconds: 20
+            initialDelaySeconds: 30
             periodSeconds: 15
           resources:
             requests:
               cpu: 100m
-              memory: 128Mi
-            limits:
               memory: 256Mi
+            limits:
+              memory: 512Mi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: watch-service
+  name: frontend
   namespace: watchify
 spec:
   type: ClusterIP
   selector:
-    app: watch-service
+    app: frontend
   ports:
     - name: http
-      port: 3003
-      targetPort: 3003
-    - name: grpc
-      port: 50053
-      targetPort: 50053
+      port: 3000
+      targetPort: 3000

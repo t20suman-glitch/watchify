@@ -1,0 +1,20 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyS3UnlessFromVpcEndpoint",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::REPLACE_WITH_YOUR_BUCKET",
+        "arn:aws:s3:::REPLACE_WITH_YOUR_BUCKET/*"
+      ],
+      "Condition": {
+        "StringNotEquals": {
+          "aws:SourceVpce": "vpce-REPLACE_WITH_YOUR_GATEWAY_ENDPOINT_ID"
+        }
+      }
+    }
+  ]
+}

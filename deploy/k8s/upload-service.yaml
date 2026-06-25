@@ -1,0 +1,96 @@
+# IRSA — replace ACCOUNT_ID. See README.md (S3 + EKS section).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: upload-service
+  namespace: watchify
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/watchify-upload-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upload-service
+  namespace: watchify
+  labels:
+    app: upload-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: upload-service
+  template:
+    metadata:
+      labels:
+        app: upload-service
+    spec:
+      serviceAccountName: upload-service
+      containers:
+        - name: upload-service
+          image: t20suman/upload-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3002
+            - name: grpc
+              containerPort: 50052
+          envFrom:
+            - configMapRef:
+                name: watchify-config
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: watchify-config
+                  key: UPLOAD_MONGO_URI
+            - name: HTTP_PORT
+              value: "3002"
+            - name: PORT
+              value: "50052"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: watchify-secrets
+                  key: AWS_ACCESS_KEY_ID
+                  optional: true
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: watchify-secrets
+                  key: AWS_SECRET_ACCESS_KEY
+                  optional: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: upload-service
+  namespace: watchify
+spec:
+  type: ClusterIP
+  selector:
+    app: upload-service
+  ports:
+    - name: http
+      port: 3002
+      targetPort: 3002
+    - name: grpc
+      port: 50052
+      targetPort: 50052

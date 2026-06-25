@@ -29,8 +29,8 @@ ssh -i your-key.pem ubuntu@<ec2-public-ip>
 Option A — automated script (clone from Git):
 
 ```bash
-export REPO_URL=https://github.com/your-org/microservice.git
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/your-org/microservice/main/deploy/ec2-setup.sh)"
+export REPO_URL=https://github.com/t20suman-glitch/watchify.git
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/t20suman-glitch/watchify/main/deploy/ec2-setup.sh)"
 ```
 
 Option B — manual:
@@ -43,7 +43,7 @@ sudo usermod -aG docker $USER
 # Log out and SSH back in so docker group applies
 
 # Get the code
-git clone https://github.com/your-org/microservice.git
+git clone https://github.com/t20suman-glitch/watchify.git
 cd microservice
 
 # Configure secrets

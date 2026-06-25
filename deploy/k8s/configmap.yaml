@@ -10,16 +10,21 @@ data:
   BCRYPT_SALT_ROUNDS: "10"
 
   # In-cluster MongoDB (headless Service + StatefulSet)
+  # Replace with Atlas URIs in Secret or patch for production.
   USER_MONGO_URI: "mongodb://mongodb-0.mongodb:27017/user_service"
   UPLOAD_MONGO_URI: "mongodb://mongodb-0.mongodb:27017/upload_service"
   WATCH_MONGO_URI: "mongodb://mongodb-0.mongodb:27017/watch_service"
 
-  # Upload — local disk (matches docker-compose.prod.yml default; S3 is stub in code)
-  STORAGE_PROVIDER: "local"
-  UPLOAD_DIR: "/app/uploads"
+  # Upload — AWS S3 (private access via VPC Gateway endpoint + IRSA)
+  STORAGE_PROVIDER: "s3"
   MAX_FILE_SIZE_MB: "500"
+  AWS_REGION: "us-east-1"
+  AWS_S3_BUCKET: "CHANGE_ME"   # set your bucket name before deploy
+  # Leave unset when using S3 Gateway VPC endpoint (recommended):
+  # AWS_S3_ENDPOINT_URL: ""
+  # AWS_S3_FORCE_PATH_STYLE: "false"
 
-  # Internal ClusterIP DNS (same as compose service names)
+  # Internal ClusterIP DNS
   USER_SERVICE_URL: "http://user-service:3001"
   UPLOAD_SERVICE_URL: "http://upload-service:3002"
   WATCH_SERVICE_URL: "http://watch-service:3003"

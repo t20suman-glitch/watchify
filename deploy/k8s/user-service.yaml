@@ -1,58 +1,44 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: upload-data
-  namespace: watchify
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 50Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: upload-service
+  name: user-service
   namespace: watchify
   labels:
-    app: upload-service
+    app: user-service
 spec:
-  # replicas: 1 required for local STORAGE_PROVIDER + ReadWriteOnce PVC
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: upload-service
+      app: user-service
   template:
     metadata:
       labels:
-        app: upload-service
+        app: user-service
     spec:
       containers:
-        - name: upload-service
-          image: watchify/upload-service:latest
+        - name: user-service
+          image: t20suman/user-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
-              containerPort: 3002
+              containerPort: 3001
             - name: grpc
-              containerPort: 50052
+              containerPort: 50051
           envFrom:
             - configMapRef:
                 name: watchify-config
+            - secretRef:
+                name: watchify-secrets
           env:
             - name: MONGO_URI
               valueFrom:
                 configMapKeyRef:
                   name: watchify-config
-                  key: UPLOAD_MONGO_URI
+                  key: USER_MONGO_URI
             - name: HTTP_PORT
-              value: "3002"
+              value: "3001"
             - name: PORT
-              value: "50052"
-          volumeMounts:
-            - name: uploads
-              mountPath: /app/uploads
+              value: "50051"
           readinessProbe:
             httpGet:
               path: /health
@@ -68,27 +54,23 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 128Mi
             limits:
-              memory: 512Mi
-      volumes:
-        - name: uploads
-          persistentVolumeClaim:
-            claimName: upload-data
+              memory: 256Mi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: upload-service
+  name: user-service
   namespace: watchify
 spec:
   type: ClusterIP
   selector:
-    app: upload-service
+    app: user-service
   ports:
     - name: http
-      port: 3002
-      targetPort: 3002
+      port: 3001
+      targetPort: 3001
     - name: grpc
-      port: 50052
-      targetPort: 50052
+      port: 50051
+      targetPort: 50051

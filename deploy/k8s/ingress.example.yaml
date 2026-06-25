@@ -1,19 +1,34 @@
-# Requires ingress-nginx + cert-manager. Edit host for your domain.
+# AWS Load Balancer Controller (ALB Ingress) — EKS public/private cluster
+#
+# Prerequisites:
+#   1. AWS Load Balancer Controller installed (IngressClass "alb")
+#   2. ACM certificate for watchify.sumanmodak.in (same region as EKS)
+#   3. Public subnets tagged: kubernetes.io/role/elb = 1
+#   4. Private subnets (worker nodes) tagged: kubernetes.io/role/internal-elb = 1
+#
+# Replace ACM_CERT_ARN before apply.
+#
+# Architecture:
+#   Internet → internet-facing ALB (public subnets)
+#           → pod IPs target-type: ip (pods on private subnets)
+#           → frontend:3000, upload-service:3002
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: watchify
   namespace: watchify
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "550m"
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/REPLACE_ACM_CERT_ID
+    # Large video uploads (MAX_FILE_SIZE_MB=500)
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
 spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - watchify.sumanmodak.in
-      secretName: watchify-tls
+  ingressClassName: alb
   rules:
     - host: watchify.sumanmodak.in
       http:

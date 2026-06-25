@@ -95,7 +95,7 @@ async function streamMedia(mediaId) {
     throw AppError.notFound('Media not found');
   }
 
-  const storage = getStorageProvider();
+  const storage = getStorageProvider(found.doc.storageProvider);
   const { stream } = await storage.getReadStream(found.doc.storageKey);
 
   return {

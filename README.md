@@ -53,7 +53,7 @@ flowchart TB
 | upload-service | `upload_service` | media metadata |
 | watch-service | `watch_service` | watch sessions, progress |
 
-File bytes live on disk (`upload_data` volume) or, later, S3 — metadata stays in upload-service’s DB.
+File bytes live in **AWS S3** on EKS (or local `upload_data` volume for docker-compose dev) — metadata stays in upload-service’s DB.
 
 ---
 
@@ -172,7 +172,7 @@ gRPC RPCs mirror the same operations — see each service’s `proto/` file.
 | RPC | gRPC (`@grpc/grpc-js`) |
 | Database | MongoDB + Mongoose |
 | Auth | JWT (`jsonwebtoken`), bcrypt |
-| Uploads | Multer, pluggable storage (local / S3 stub) |
+| Uploads | Multer, local disk or AWS S3 (`@aws-sdk/client-s3`) |
 | Logging | Winston (JSON in production) |
 | Frontend | Next.js (App Router), TypeScript |
 | Containers | Docker, Docker Compose |
@@ -247,7 +247,11 @@ npm run docker:build
 | `USER_MONGO_URI` | No | Defaults to built-in `mongodb` container |
 | `UPLOAD_MONGO_URI` | No | Same |
 | `WATCH_MONGO_URI` | No | Same |
-| `STORAGE_PROVIDER` | No | `local` (default) or `s3` |
+| `STORAGE_PROVIDER` | No | `local` (compose dev) or `s3` (EKS — see `deploy/k8s/`) |
+| `AWS_REGION` | When `s3` | S3 bucket region |
+| `AWS_S3_BUCKET` | When `s3` | Bucket name |
+| `AWS_ACCESS_KEY_ID` | No | Optional — use IAM role on EKS/EC2 if unset |
+| `AWS_SECRET_ACCESS_KEY` | No | Optional |
 | `MAX_FILE_SIZE_MB` | No | Default `500` |
 
 Per-service variables are documented in each `services/*/README.md` and `.env.example`.
@@ -264,8 +268,14 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 | Guide | Description |
 |-------|-------------|
-| [deploy/EC2.md](deploy/EC2.md) | Full EC2 + Docker Compose walkthrough |
+| [deploy/EKS-END-TO-END.md](deploy/EKS-END-TO-END.md) | **Full guide** — Jenkins master → EKS → deploy |
+| [deploy/EKS-DEPLOY.md](deploy/EKS-DEPLOY.md) | EKS checklist — ALB, S3, IRSA, Docker Hub `t20suman` |
+| [deploy/k8s/README.md](deploy/k8s/README.md) | Kubernetes manifests |
+| [deploy/jenkins/README.md](deploy/jenkins/README.md) | Jenkins CI pipelines |
+| [deploy/EC2.md](deploy/EC2.md) | EC2 + Docker Compose walkthrough |
 | [deploy/VAULT.md](deploy/VAULT.md) | Load secrets from HashiCorp Vault |
+
+**GitHub:** https://github.com/t20suman-glitch/watchify.git
 
 **Security group:** expose `80` (and `22` for SSH). Do not expose MongoDB or internal API ports.
 

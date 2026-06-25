@@ -1,56 +1,68 @@
-# Kubernetes manifests — Watchify
+# Kubernetes manifests — Watchify (EKS + S3)
 
-Matches current code and `docker-compose.prod.yml` defaults:
+**Repo:** https://github.com/t20suman-glitch/watchify.git  
+**Docker Hub:** `t20suman/<service>:<tag>`
 
-- **MongoDB** — StatefulSet, 1 replica, headless Service, PVC per pod
-- **Upload storage** — `STORAGE_PROVIDER=local` + PVC (`upload-data`)
-- **S3** — stub in code; switch to S3 + IRSA after implementing `s3StorageProvider.js`
-- **Logging** — `NODE_ENV=production`, `LOG_LEVEL` from ConfigMap (Winston)
-- **Auth** — `JWT_SECRET` in Secret (user-service + watch-service)
+Full checklist: [../EKS-DEPLOY.md](../EKS-DEPLOY.md)  
+**End-to-end guide (Jenkins → EKS → deploy):** [../EKS-END-TO-END.md](../EKS-END-TO-END.md)
 
-## Layout
+All manifests live in this single folder (no subdirectories).
+
+- **MongoDB** — StatefulSet, 1 replica, headless Service, 20Gi PVC
+- **Upload storage** — AWS S3 via IRSA + VPC Gateway endpoint
+- **Frontend** — ClusterIP :3000; **ALB** exposes :443 → Service :3000
+- **Auth** — `JWT_SECRET` in Secret
+
+## Files
+
+| File | Contents |
+|------|----------|
+| `namespace.yaml` | `watchify` namespace |
+| `configmap.yaml` | Env, Mongo URIs, S3 settings |
+| `secrets.example.yaml` | JWT template (copy to `secrets.yaml`) |
+| `mongodb.yaml` | Mongo Service + StatefulSet |
+| `user-service.yaml` | Deployment + Service |
+| `upload-service.yaml` | ServiceAccount (IRSA) + Deployment + Service |
+| `watch-service.yaml` | Deployment + Service |
+| `frontend.yaml` | Deployment + Service |
+| `ingress.example.yaml` | **ALB** Ingress for EKS |
+| `iam-upload-s3-policy.example.json` | IAM policy for IRSA |
+| `bucket-policy-vpce.example.json` | Bucket policy for private VPC endpoint |
+
+## Images (Docker Hub)
 
 ```
-deploy/k8s/
-├── namespace.yaml
-├── configmap.yaml
-├── secrets.example.yaml
-├── ingress.example.yaml
-├── mongodb/
-├── user-service/
-├── upload-service/      # includes PVC for local uploads
-├── watch-service/
-└── frontend/
+t20suman/user-service:<tag>
+t20suman/upload-service:<tag>
+t20suman/watch-service:<tag>
+t20suman/frontend:<tag>
 ```
 
-## Build images
+Jenkins CI2 updates tags in YAML after CI1 push. Initial deploy: push `latest` or a version tag and match manifests.
 
-```bash
-docker build -t watchify/user-service:latest ./services/user-service
-docker build -t watchify/upload-service:latest ./services/upload-service
-docker build -t watchify/watch-service:latest ./services/watch-service
-docker build -t watchify/frontend:latest ./frontend
-```
+## Before apply (EKS)
 
-Push to your registry and update `image:` fields if not using local cluster images.
+1. Set **`AWS_S3_BUCKET`** in `configmap.yaml` (when bucket exists)
+2. Replace **`ACCOUNT_ID`** in `upload-service.yaml` (IRSA role ARN)
+3. Replace **ACM certificate ARN** in `ingress.example.yaml`
+4. S3 Gateway VPC endpoint + IRSA — see [../EKS-DEPLOY.md](../EKS-DEPLOY.md)
+5. Push images to **Docker Hub** (`t20suman/*`)
+6. `secrets.yaml` with `JWT_SECRET`
 
 ## Apply
 
 ```bash
+cd deploy/k8s
+cp secrets.example.yaml secrets.yaml   # set JWT_SECRET — do not commit
+kubectl apply -f secrets.yaml
 kubectl apply -f namespace.yaml
 kubectl apply -f configmap.yaml
-cp secrets.example.yaml secrets.yaml   # set JWT_SECRET
-kubectl apply -f secrets.yaml
-
-kubectl apply -f mongodb/
+kubectl apply -f mongodb.yaml
 kubectl wait --for=condition=ready pod/mongodb-0 -n watchify --timeout=180s
-
-kubectl apply -f upload-service/       # PVC + deployment
-kubectl apply -f user-service/
-kubectl apply -f watch-service/
-kubectl apply -f frontend/
-
-# optional — after ingress-nginx + cert-manager
+kubectl apply -f upload-service.yaml
+kubectl apply -f user-service.yaml
+kubectl apply -f watch-service.yaml
+kubectl apply -f frontend.yaml
 kubectl apply -f ingress.example.yaml
 ```
 
@@ -58,43 +70,30 @@ kubectl apply -f ingress.example.yaml
 
 ```bash
 kubectl get pods -n watchify
-kubectl logs -n watchify deploy/user-service --tail=20
-
-kubectl port-forward -n watchify svc/frontend 3000:3000
+kubectl get ingress -n watchify
+kubectl logs -n watchify deploy/upload-service --tail=20
 ```
-
-## Public vs internal
-
-| Service | Exposure |
-|---------|----------|
-| frontend | Ingress `/` |
-| upload-service | Optional Ingress `/api/uploads` |
-| user-service | ClusterIP only |
-| watch-service | ClusterIP only |
-| MongoDB | ClusterIP headless only |
-
-## MongoDB connection
-
-```text
-mongodb://mongodb-0.mongodb:27017/<database>
-```
-
-Databases: `user_service`, `upload_service`, `watch_service`
-
-## Namespace delete
-
-`kubectl delete namespace watchify` removes PVCs and Mongo/upload data. S3 files (if used later) are unaffected.
-
-## Atlas (optional)
-
-Edit `configmap.yaml` URIs to `mongodb+srv://...` or patch before apply.
 
 ## Scale notes
 
-| Service | Replicas | Note |
-|---------|----------|------|
-| user-service | 2 | Stateless |
-| watch-service | 2 | Stateless |
-| frontend | 2 | Stateless |
-| upload-service | **1** | Required for local PVC |
-| mongodb | **1** | Not a replica set |
+| Service | Replicas |
+|---------|----------|
+| user-service | 2 |
+| watch-service | 2 |
+| frontend | 2 |
+| upload-service | 2 |
+| mongodb | 1 |
+
+## Ingress (ALB)
+
+Uses `ingressClassName: alb` — **not** nginx. Requires AWS Load Balancer Controller + ACM cert.
+
+See [../EKS-DEPLOY.md](../EKS-DEPLOY.md) for public/private subnet setup.
+
+## Jenkins CI
+
+Build/push images and bump manifest tags — [../jenkins/README.md](../jenkins/README.md).
+
+## Atlas (optional)
+
+Patch Mongo URIs in `configmap.yaml` or store in Secret.
